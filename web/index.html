@@ -8,60 +8,23 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="./">Geo<span>QR</span></a>
-    <span class="badge">V0.2 Web MVP</span>
-  </header>
+  <header class="topbar"><a class="brand" href="./">Geo<span>QR</span></a><span class="badge">V0.2 Web MVP</span></header>
   <main class="shell">
-    <section class="hero">
-      <div>
-        <p class="eyebrow">LOCATION-AWARE QR INFRASTRUCTURE</p>
-        <h1>Create once.<br><span>Share anywhere.</span></h1>
-        <p class="lead">Generate a dynamic GeoQR for links, forms and digital files, with optional location-aware scan events.</p>
-      </div>
-      <div class="hero-card"><div class="pin">⌖</div><strong>Privacy first</strong><p>Scanner location is requested only with explicit permission.</p></div>
-    </section>
-
+    <section class="hero"><div><p class="eyebrow">LOCATION-AWARE QR INFRASTRUCTURE</p><h1>Create once.<br><span>Share anywhere.</span></h1><p class="lead">Generate a dynamic GeoQR for links, forms and digital files, with optional location-aware scan events.</p></div><div class="hero-card"><div class="pin">⌖</div><strong>Privacy first</strong><p>Scanner location is requested only with explicit permission.</p></div></section>
     <section class="workspace">
-      <div class="panel form-panel">
-        <div class="panel-head"><div><p class="eyebrow">01 / CONTENT</p><h2>What are you sharing?</h2></div></div>
-        <div class="types" id="types">
-          <button data-type="url" class="type active">🔗 <span>Link</span></button>
-          <button data-type="form" class="type">▣ <span>Google Form</span></button>
-          <button data-type="pdf" class="type">PDF <span>Document</span></button>
-          <button data-type="image" class="type">▧ <span>Image</span></button>
-          <button data-type="video" class="type">▶ <span>Video</span></button>
-          <button data-type="docx" class="type">W <span>Word</span></button>
-          <button data-type="xlsx" class="type">X <span>Excel</span></button>
-        </div>
-        <label for="title">Name</label>
-        <input id="title" placeholder="e.g. Field survey form" autocomplete="off">
-        <label for="target">Destination URL</label>
-        <input id="target" type="url" placeholder="https://example.com" autocomplete="off">
-
-        <div class="location-box">
-          <div><p class="eyebrow">02 / GENERATION LOCATION</p><strong id="location-status">Location not captured</strong><small id="location-detail">Your browser will ask for permission.</small></div>
-          <button id="locate" class="secondary">Use my location</button>
-        </div>
-
-        <div class="options">
-          <label class="switch-row"><span><strong>Record scan location</strong><small>Requires scanner consent</small></span><input id="scan-location" type="checkbox" checked><i></i></label>
-          <label class="switch-row"><span><strong>Dynamic QR</strong><small>Destination can be changed later</small></span><input type="checkbox" checked disabled><i></i></label>
-        </div>
-        <button id="generate" class="primary">Generate GeoQR <span>→</span></button>
-        <p class="disclaimer">V0.2 stores no files and does not claim production E2EE. Backend integration comes next.</p>
+      <div class="panel form-panel"><div class="panel-head"><div><p class="eyebrow">01 / CONTENT</p><h2>What are you sharing?</h2></div></div>
+        <div class="types" id="types"><button data-type="url" class="type active">🔗 <span>Link</span></button><button data-type="form" class="type">▣ <span>Google Form</span></button><button data-type="pdf" class="type">PDF <span>Document</span></button><button data-type="image" class="type">▧ <span>Image</span></button><button data-type="video" class="type">▶ <span>Video</span></button><button data-type="docx" class="type">W <span>Word</span></button><button data-type="xlsx" class="type">X <span>Excel</span></button></div>
+        <label for="title">Name</label><input id="title" placeholder="e.g. Field survey form" autocomplete="off">
+        <label for="target">Destination URL</label><input id="target" type="url" placeholder="https://example.com" autocomplete="off">
+        <div class="location-box"><div><p class="eyebrow">02 / GENERATION LOCATION</p><strong id="location-status">Location not captured</strong><small id="location-detail">Your browser will ask for permission.</small></div><button id="locate" class="secondary">Use my location</button></div>
+        <div class="options"><label class="switch-row"><span><strong>Record scan location</strong><small>Requires scanner consent</small></span><input id="scan-location" type="checkbox" checked><i></i></label><label class="switch-row"><span><strong>Dynamic QR</strong><small>Destination can be changed later</small></span><input type="checkbox" checked disabled><i></i></label></div>
+        <button id="generate" class="primary">Generate GeoQR <span>→</span></button><p class="disclaimer">V0.2 stores no files and does not claim production E2EE. Backend integration comes next.</p>
       </div>
-
-      <div class="panel preview-panel">
-        <p class="eyebrow">03 / PREVIEW</p>
-        <div class="qr-stage" id="qr-stage"><div class="qr-placeholder">QR<br><small>READY</small></div></div>
-        <div class="qr-meta"><strong id="qr-name">Your GeoQR</strong><span id="qr-id">Not generated</span></div>
-        <button id="download" class="secondary full" disabled>Download QR PNG</button>
-        <div class="security-note"><span>⌁</span><div><strong>Encrypted payload architecture</strong><p>The QR carries only a compact GeoQR identifier. Sensitive content stays outside the QR payload.</p></div></div>
-      </div>
+      <div class="panel preview-panel"><p class="eyebrow">03 / PREVIEW</p><div class="qr-stage" id="qr-stage"><div class="qr-placeholder">QR<br><small>READY</small></div></div><div class="qr-meta"><strong id="qr-name">Your GeoQR</strong><span id="qr-id">Not generated</span></div><button id="download" class="secondary full" disabled>Download QR PNG</button><div class="security-note"><span>⌁</span><div><strong>Encrypted payload architecture</strong><p>The QR carries only a compact GeoQR identifier. Sensitive content stays outside the QR payload.</p></div></div></div>
     </section>
   </main>
   <footer>GeoQR · Location-aware QR infrastructure · <a href="https://github.com/KumarNarendra0619/GeoQR">GitHub</a></footer>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js" integrity="sha256-9Fq6X9GQm7mF0w8lZV8o4tP4j0sW8oP9uR2JQx8sK8E=" crossorigin="anonymous"></script>
   <script src="app.js"></script>
 </body>
 </html>
