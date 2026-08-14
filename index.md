@@ -1,46 +1,25 @@
 ---
-title: Website Title
-subtitle: Subtitle of the book
+title: GeoQR
+subtitle: Location-aware QR infrastructure
 ---
 
-## Introduction
+# GeoQR
 
-Welcome to the official repository for _**Website Title**_. This repository contains all the code examples featured in the book.
+GeoQR combines dynamic QR sharing with optional geospatial context. The project is being built in controlled milestones: architecture → web MVP → backend → Android → encryption → location analytics → production hardening.
 
----
+## Web MVP
 
-## Featured Projects
+The first interactive creator is deployed as a lightweight static application:
 
-::::{grid} 2 2 4 4
+[**Open GeoQR Creator →**](app/)
 
-:::{card}
-:link: https://mystmd.org
-![mystmd](pages/images/myst.webp)
-+++
-**MyST Markdown**
-:::
+The current MVP supports destination URLs, content-type metadata, generation-location capture with browser permission, compact `GQR://v1/<id>/<token>` payloads, client-side QR rendering and PNG download.
 
-:::{card}
-:link: https://jupyterbook.org
-![jupyter-book](pages/images/jupyter-book.webp)
-+++
-**Jupyter Book**
-:::
+> **Security status:** This is an MVP. It does not claim production end-to-end encryption, persistent backend storage, or silent scanner-location collection.
 
-:::{card}
-:link: https://jupyter.org
-![jupyter](pages/images/jupyter.webp)
-+++
-**Jupyter**
-:::
+## Repository
 
-:::{card}
-:link: https://python.org
-![python](pages/images/python.webp)
-+++
-**Python**
-:::
-
-::::
-
----
+- `web/` — GitHub Pages web MVP
+- `backend/` — backend boundary and API contract
+- `docs/` — architecture and milestone documentation
+- `.github/workflows/` — GitHub Pages deployment
