@@ -1,0 +1,65 @@
+openapi: 3.0.3
+info:
+  title: GeoQR API
+  version: 0.2.0
+  description: Dynamic QR, content metadata and consented scan-event API.
+servers:
+  - url: https://api.example.com
+paths:
+  /v1/qr:
+    post:
+      summary: Create a GeoQR
+      security: [{bearerAuth: []}]
+      responses:
+        '201': {description: GeoQR created}
+        '400': {description: Invalid request}
+        '401': {description: Unauthorized}
+  /v1/qr/{qrId}:
+    get:
+      summary: Resolve a public GeoQR
+      parameters:
+        - {name: qrId, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {description: Resolver metadata}
+        '404': {description: QR not found}
+  /v1/qr/{qrId}/scans:
+    post:
+      summary: Record a consented scan event
+      parameters:
+        - {name: qrId, in: path, required: true, schema: {type: string}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScanEvent'
+      responses:
+        '201': {description: Scan recorded}
+        '403': {description: Location consent required when location is submitted}
+        '429': {description: Rate limited}
+  /v1/qr/{qrId}/destination:
+    patch:
+      summary: Change a dynamic destination
+      security: [{bearerAuth: []}]
+      parameters:
+        - {name: qrId, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {description: Destination updated}
+        '401': {description: Unauthorized}
+        '403': {description: Not the QR owner}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    ScanEvent:
+      type: object
+      required: [scannedAt, locationConsent]
+      properties:
+        scannedAt: {type: string, format: date-time}
+        locationConsent: {type: boolean}
+        latitude: {type: number, minimum: -90, maximum: 90}
+        longitude: {type: number, minimum: -180, maximum: 180}
+        accuracyMeters: {type: number, minimum: 0}
+        sessionId: {type: string, maxLength: 128}
