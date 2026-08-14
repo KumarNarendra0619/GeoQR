@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0b1020" />
+  <meta name="description" content="GeoQR — location-aware QR infrastructure." />
+  <title>GeoQR — Location-aware QR</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">⌖</span><span>GeoQR</span></div>
+      <span class="status">V0.1 Prototype</span>
+    </header>
+
+    <section class="hero">
+      <div>
+        <p class="eyebrow">LOCATION-AWARE QR INFRASTRUCTURE</p>
+        <h1>Create a QR that knows <em>where</em> it was created.</h1>
+        <p class="lede">Generate a dynamic GeoQR payload, capture creation location with permission, and prepare a secure scan workflow.</p>
+      </div>
+      <div class="qr-card" aria-label="QR preview"><canvas id="qrCanvas" width="220" height="220"></canvas><span id="qrLabel">Ready</span></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><div><h2>Create GeoQR</h2><p>V0.1 creates the client-side payload. Server-backed dynamic resolution comes next.</p></div></div>
+      <div class="grid">
+        <label>Content type<select id="type"><option value="url">Website / URL</option><option value="google-form">Google Form</option><option value="pdf">PDF</option><option value="image">Image</option><option value="video">Video</option><option value="word">Word document</option><option value="excel">Excel file</option></select></label>
+        <label>Destination / file URL<input id="destination" placeholder="https://example.com" autocomplete="off" /></label>
+      </div>
+      <div class="location-box"><div><strong>Generation location</strong><p id="locationText">Not captured yet. Location is requested only when you press Capture.</p></div><button id="capture" class="secondary">⌖ Capture location</button></div>
+      <div class="security-box"><div><strong>Security</strong><p>Payload is encoded with Web Crypto before the QR is generated. This prototype does not claim production E2EE.</p></div><span class="lock">🔐</span></div>
+      <div class="actions"><button id="generate" class="primary">Generate GeoQR</button><button id="download" class="secondary" disabled>Download PNG</button></div>
+      <pre id="payload" class="payload" hidden></pre>
+    </section>
+
+    <section class="features"><article><span>01</span><h3>Location-first</h3><p>Separate QR generation coordinates from later scan coordinates.</p></article><article><span>02</span><h3>Consent-driven</h3><p>Scanner location must be permission-based, never silently collected.</p></article><article><span>03</span><h3>Dynamic-ready</h3><p>V0.1 uses a stable payload design ready for API-backed QR IDs.</p></article></section>
+    <footer>GeoQR · V0.1 · Privacy by design</footer>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
