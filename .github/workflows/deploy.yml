@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - geoqr-v0.1
 
 permissions:
   contents: read
