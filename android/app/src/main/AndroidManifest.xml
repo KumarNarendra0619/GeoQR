@@ -6,7 +6,7 @@
         android:allowBackup="false"
         android:label="GeoQR"
         android:supportsRtl="true"
-        android:theme="@style/Theme.GeoQR">
+        android:theme="@android:style/Theme.Material.Light.NoActionBar">
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
