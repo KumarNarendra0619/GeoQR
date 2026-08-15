@@ -1,5 +1,27 @@
 package com.geoqr.app.model
 
-// Canonical transport/domain models live in GeoQrModels.kt.
-// This file is intentionally kept as a compatibility placeholder so the
-// V0.4 branch does not redeclare the same model types.
+/** Shared transport/domain models for the Android app. */
+data class GeoPoint(
+    val latitude: Double,
+    val longitude: Double,
+    val accuracyMeters: Double? = null
+)
+
+data class CreateQrRequest(
+    val type: String,
+    val destination: String,
+    val generationLocation: GeoPoint? = null,
+    val expiresAt: String? = null
+)
+
+data class ScanRequest(
+    val sessionId: String,
+    val locationConsent: Boolean,
+    val location: GeoPoint? = null
+)
+
+data class GeoQrPayload(
+    val version: Int = 1,
+    val qrId: String,
+    val token: String
+)
