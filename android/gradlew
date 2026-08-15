@@ -1,0 +1,24 @@
+#!/bin/sh
+
+APP_HOME=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+
+if [ -z "$JAVA_HOME" ]; then
+  if command -v java >/dev/null 2>&1; then
+    JAVACMD=java
+  else
+    echo "ERROR: JAVA_HOME is not set and no java command was found." >&2
+    exit 1
+  fi
+else
+  JAVACMD="$JAVA_HOME/bin/java"
+fi
+
+CLASSPATH="$APP_HOME/gradle/wrapper/gradle-wrapper.jar"
+
+if [ ! -f "$CLASSPATH" ]; then
+  echo "ERROR: Gradle wrapper JAR is missing: $CLASSPATH" >&2
+  echo "Generate the wrapper with Gradle 8.9 before running CI." >&2
+  exit 1
+fi
+
+exec "$JAVACMD" -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"

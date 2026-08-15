@@ -1,0 +1,48 @@
+name: Android CI
+
+on:
+  push:
+    branches: ["main", "geoqr-v0.4-auth-tests"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Install Gradle 8.9 and generate genuine wrapper
+        working-directory: android
+        run: |
+          curl -fsSL https://services.gradle.org/distributions/gradle-8.9-bin.zip -o /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /tmp/gradle-dist
+          /tmp/gradle-dist/gradle-8.9/bin/gradle wrapper --gradle-version 8.9
+          test -f gradle/wrapper/gradle-wrapper.jar
+          chmod +x gradlew
+
+      - name: Verify Gradle wrapper
+        working-directory: android
+        run: ./gradlew --version
+
+      - name: Compile and test
+        working-directory: android
+        run: ./gradlew testDebugUnitTest assembleDebug --stacktrace
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: geoqr-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
