@@ -9,14 +9,15 @@ import android.os.Bundle
 import android.provider.MediaStore
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,12 +40,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color as UiColor
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -58,7 +61,6 @@ import com.google.zxing.EncodeHintType
 import com.google.zxing.MultiFormatWriter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.rememberCoroutineScope
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -92,10 +94,8 @@ private fun GeoLensApp() {
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { result ->
-        cameraGranted = result[Manifest.permission.CAMERA] == true ||
-            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-        locationGranted = result[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
-            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        cameraGranted = result[Manifest.permission.CAMERA] == true || ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+        locationGranted = result[Manifest.permission.ACCESS_FINE_LOCATION] == true || ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
     }
 
     LaunchedEffect(Unit) {
@@ -111,22 +111,17 @@ private fun GeoLensApp() {
                     if (loc != null) {
                         accuracy = loc.accuracy
                         locationText = "%.6f, %.6f".format(Locale.US, loc.latitude, loc.longitude)
-                    } else {
-                        locationText = "Location unavailable"
-                    }
+                    } else locationText = "Location unavailable"
                 }
         }
     }
 
     Surface(modifier = Modifier.fillMaxSize(), color = UiColor.Black) {
         if (!cameraGranted) {
-            PermissionGate(onGrant = {
-                permissionLauncher.launch(arrayOf(Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION))
-            })
+            PermissionGate { permissionLauncher.launch(arrayOf(Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION)) }
         } else {
             CameraScreen(
                 executor = executor,
-                imageCapture = imageCapture,
                 onImageCaptureReady = { imageCapture = it },
                 captureId = captureId,
                 locationText = locationText,
@@ -136,9 +131,8 @@ private fun GeoLensApp() {
                 onCapture = {
                     val currentCaptureId = captureId
                     status = "CAPTURING"
-                    val outputName = "GEOLENS_${currentCaptureId}.jpg"
                     val values = ContentValues().apply {
-                        put(MediaStore.Images.Media.DISPLAY_NAME, outputName)
+                        put(MediaStore.Images.Media.DISPLAY_NAME, "GEOLENS_$currentCaptureId.jpg")
                         put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
                         put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/GeoLens")
                     }
@@ -149,14 +143,12 @@ private fun GeoLensApp() {
                     ).build()
 
                     imageCapture?.takePicture(output, executor, object : ImageCapture.OnImageSavedCallback {
-                        override fun onError(exception: ImageCaptureException) {
-                            status = "CAPTURE FAILED"
-                        }
+                        override fun onError(exception: ImageCaptureException) { status = "CAPTURE FAILED" }
 
                         override fun onImageSaved(result: ImageCapture.OutputFileResults) {
                             val uri = result.savedUri ?: return
                             val now = System.currentTimeMillis()
-                            val callback = { loc: android.location.Location? ->
+                            val save = { loc: android.location.Location? ->
                                 val record = CaptureRecord(
                                     captureId = currentCaptureId,
                                     uri = uri.toString(),
@@ -169,21 +161,18 @@ private fun GeoLensApp() {
                                     locationStatus = if (loc != null) "RECORDED" else "UNAVAILABLE",
                                     qrReference = currentCaptureId
                                 )
-                                scope.launch(Dispatchers.IO) {
-                                    db.captureDao().insert(record)
-                                }
+                                scope.launch(Dispatchers.IO) { db.captureDao().insert(record) }
                                 accuracy = loc?.accuracy
                                 locationText = loc?.let { "%.6f, %.6f".format(Locale.US, it.latitude, it.longitude) } ?: "Location unavailable"
                                 qrBitmap = generateQr("geolens://verify/$currentCaptureId")
                                 captureId = newCaptureId()
                                 status = "SAVED"
                             }
-
                             if (locationGranted) {
                                 fused.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, CancellationTokenSource().token)
-                                    .addOnSuccessListener { callback(it) }
-                                    .addOnFailureListener { callback(null) }
-                            } else callback(null)
+                                    .addOnSuccessListener { save(it) }
+                                    .addOnFailureListener { save(null) }
+                            } else save(null)
                         }
                     })
                 }
@@ -198,10 +187,7 @@ private fun PermissionGate(onGrant: () -> Unit) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(24.dp)) {
             Text("GeoLens", color = UiColor.White, style = MaterialTheme.typography.headlineLarge)
             Spacer(Modifier.height(12.dp))
-            Text(
-                "Camera + GPS capture with location verification.",
-                color = UiColor.LightGray
-            )
+            Text("Professional camera with location intelligence.", color = UiColor.LightGray)
             Spacer(Modifier.height(20.dp))
             Button(onClick = onGrant) { Text("Grant Camera & Location") }
         }
@@ -211,7 +197,6 @@ private fun PermissionGate(onGrant: () -> Unit) {
 @Composable
 private fun CameraScreen(
     executor: Executor,
-    imageCapture: ImageCapture?,
     onImageCaptureReady: (ImageCapture) -> Unit,
     captureId: String,
     locationText: String,
@@ -220,6 +205,7 @@ private fun CameraScreen(
     status: String,
     onCapture: () -> Unit
 ) {
+    val lifecycleOwner = LocalLifecycleOwner.current
     Box(Modifier.fillMaxSize()) {
         AndroidView(
             factory = { ctx ->
@@ -227,20 +213,11 @@ private fun CameraScreen(
                     val future = ProcessCameraProvider.getInstance(ctx)
                     future.addListener({
                         val provider = future.get()
-                        val preview = Preview.Builder().build().also {
-                            it.surfaceProvider = previewView.surfaceProvider
-                        }
-                        val capture = ImageCapture.Builder()
-                            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-                            .build()
+                        val preview = Preview.Builder().build().also { it.surfaceProvider = previewView.surfaceProvider }
+                        val capture = ImageCapture.Builder().setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY).build()
                         try {
                             provider.unbindAll()
-                            provider.bindToLifecycle(
-                                ctx as ComponentActivity,
-                                CameraSelector.DEFAULT_BACK_CAMERA,
-                                preview,
-                                capture
-                            )
+                            provider.bindToLifecycle(lifecycleOwner, CameraSelector.DEFAULT_BACK_CAMERA, preview, capture)
                             onImageCaptureReady(capture)
                         } catch (_: Exception) { }
                     }, executor)
@@ -263,17 +240,10 @@ private fun CameraScreen(
                     Text(captureId, color = UiColor.White.copy(alpha = .8f), style = MaterialTheme.typography.labelSmall)
                 }
                 if (qrBitmap != null) {
-                    androidx.compose.foundation.Image(
-                        bitmap = qrBitmap.asImageBitmap(),
-                        contentDescription = "GeoQR",
-                        modifier = Modifier.size(72.dp).background(UiColor.White)
-                    )
+                    Image(bitmap = qrBitmap.asImageBitmap(), contentDescription = "GeoQR", modifier = Modifier.size(72.dp).background(UiColor.White))
                 }
                 Spacer(Modifier.size(12.dp))
-                Box(
-                    modifier = Modifier.size(76.dp).background(UiColor.White, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(Modifier.size(76.dp).background(UiColor.White, CircleShape), contentAlignment = Alignment.Center) {
                     Button(onClick = onCapture, shape = CircleShape, modifier = Modifier.size(64.dp)) { }
                 }
             }
@@ -284,11 +254,8 @@ private fun CameraScreen(
 private fun newCaptureId(): String = "GL-${SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())}-${UUID.randomUUID().toString().take(6).uppercase(Locale.US)}"
 
 private fun generateQr(text: String): Bitmap? = try {
-    val hints = mapOf(EncodeHintType.MARGIN to 1)
-    val matrix = MultiFormatWriter().encode(text, BarcodeFormat.QR_CODE, 256, 256, hints)
+    val matrix = MultiFormatWriter().encode(text, BarcodeFormat.QR_CODE, 256, 256, mapOf(EncodeHintType.MARGIN to 1))
     Bitmap.createBitmap(matrix.width, matrix.height, Bitmap.Config.ARGB_8888).also { bitmap ->
-        for (x in 0 until matrix.width) for (y in 0 until matrix.height) {
-            bitmap.setPixel(x, y, if (matrix[x, y]) Color.BLACK else Color.WHITE)
-        }
+        for (x in 0 until matrix.width) for (y in 0 until matrix.height) bitmap.setPixel(x, y, if (matrix[x, y]) Color.BLACK else Color.WHITE)
     }
 } catch (_: Exception) { null }
