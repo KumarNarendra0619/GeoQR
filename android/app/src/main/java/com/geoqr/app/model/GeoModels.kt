@@ -4,7 +4,7 @@ package com.geoqr.app.model
 data class GeoPoint(
     val latitude: Double,
     val longitude: Double,
-    val accuracyMeters: Float? = null
+    val accuracyMeters: Double? = null
 )
 
 data class CreateQrRequest(
