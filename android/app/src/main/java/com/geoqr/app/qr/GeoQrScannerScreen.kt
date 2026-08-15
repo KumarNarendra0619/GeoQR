@@ -1,8 +1,11 @@
 package com.geoqr.app.qr
 
 import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -17,9 +20,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.camera.view.PreviewView
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+
+private fun cameraGranted(context: Context): Boolean =
+    ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.CAMERA
+    ) == PackageManager.PERMISSION_GRANTED
 
 @androidx.compose.runtime.Composable
 fun GeoQrScannerScreen(
@@ -28,7 +37,7 @@ fun GeoQrScannerScreen(
     lifecycleOwner: LifecycleOwner
 ) {
     val context = LocalContext.current
-    var granted by remember { mutableStateOf(GeoQrPermissions.cameraGranted(context)) }
+    var granted by remember { mutableStateOf(cameraGranted(context)) }
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted = it }
