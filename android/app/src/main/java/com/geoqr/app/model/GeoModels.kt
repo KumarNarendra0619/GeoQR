@@ -10,7 +10,8 @@ data class GeoPoint(
 data class CreateQrRequest(
     val type: String,
     val destination: String,
-    val generationLocation: GeoPoint? = null
+    val generationLocation: GeoPoint? = null,
+    val expiresAt: String? = null
 )
 
 data class ScanRequest(
