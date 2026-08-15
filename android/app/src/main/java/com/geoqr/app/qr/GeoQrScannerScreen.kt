@@ -19,11 +19,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.camera.view.PreviewView
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.LifecycleOwner
 
 @androidx.compose.runtime.Composable
 fun GeoQrScannerScreen(
     onDetected: (String) -> Unit,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    lifecycleOwner: LifecycleOwner
 ) {
     val context = LocalContext.current
     var granted by remember { mutableStateOf(GeoQrPermissions.cameraGranted(context)) }
@@ -41,15 +43,13 @@ fun GeoQrScannerScreen(
     }
 
     val previewView = remember { PreviewView(context) }
-    var controller by remember { mutableStateOf<CameraScannerController?>(null) }
 
-    DisposableEffect(Unit) {
-        val c = CameraScannerController(context, context as androidx.lifecycle.LifecycleOwner) {
+    DisposableEffect(lifecycleOwner) {
+        val controller = CameraScannerController(context, lifecycleOwner) {
             onDetected(it.rawValue)
         }
-        controller = c
-        c.bind(previewView.surfaceProvider)
-        onDispose { c.close() }
+        controller.bind(previewView.surfaceProvider)
+        onDispose { controller.close() }
     }
 
     Box(Modifier.fillMaxSize()) {
