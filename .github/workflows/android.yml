@@ -5,6 +5,7 @@ on:
     branches: ["main", "geoqr-v0.4-auth-tests"]
   pull_request:
     branches: ["main"]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -22,8 +23,18 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      - name: Make Gradle wrapper executable
-        run: chmod +x android/gradlew
+      - name: Install Gradle 8.9 and generate genuine wrapper
+        working-directory: android
+        run: |
+          curl -fsSL https://services.gradle.org/distributions/gradle-8.9-bin.zip -o /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /tmp/gradle-dist
+          /tmp/gradle-dist/gradle-8.9/bin/gradle wrapper --gradle-version 8.9
+          test -f gradle/wrapper/gradle-wrapper.jar
+          chmod +x gradlew
+
+      - name: Verify Gradle wrapper
+        working-directory: android
+        run: ./gradlew --version
 
       - name: Compile and test
         working-directory: android
